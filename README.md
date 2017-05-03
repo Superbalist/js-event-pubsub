@@ -127,14 +127,14 @@ var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
 var eventPubSub = require('@superbalist/js-event-pubsub');
 var EventManager = eventPubSub.EventManager;
 var SchemaEventMessageTranslator = eventPubSub.translators.SchemaEventMessageTranslator;
-var JSONSchemaValidator = eventPubSub.validators.JSONSchemaValidator;
+var JSONSchemaEventValidator = eventPubSub.validators.JSONSchemaEventValidator;
 var SchemaEvent = eventPubSub.events.SchemaEvent;
 
 // create a new event manager
 let adapter = new LocalPubSubAdapter();
-let translator = new TopicEventMessageTranslator();
+let translator = new SchemaEventMessageTranslator();
 
-let ajv = JSONSchemaValidator.makeDefaultAjv();
+let ajv = JSONSchemaEventValidator.makeDefaultAjv();
 ajv.addSchema({
   $schema: 'http://json-schema.org/draft-04/schema#',
   title: 'My Schema',
@@ -152,7 +152,7 @@ ajv.addSchema({
     'user'
   ]
 }, 'schemas://events/user/created/1.0.json');
-let validator = new JSONSchemaValidator(ajv);
+let validator = new JSONSchemaEventValidator(ajv);
 
 let manager = new EventManager(adapter, translator, validator);
 

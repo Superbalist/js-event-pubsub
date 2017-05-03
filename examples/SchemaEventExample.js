@@ -3,13 +3,13 @@
 var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
 var EventManager = require('../src/EventManager');
 var SchemaEventMessageTranslator = require('../src/translators/SchemaEventMessageTranslator');
-var JSONSchemaValidator = require('../src/validators/JSONSchemaEventValidator');
+var JSONSchemaEventValidator = require('../src/validators/JSONSchemaEventValidator');
 var SchemaEvent = require('../src/events/SchemaEvent');
 
 let adapter = new LocalPubSubAdapter();
 let translator = new SchemaEventMessageTranslator();
 
-let ajv = JSONSchemaValidator.makeDefaultAjv();
+let ajv = JSONSchemaEventValidator.makeDefaultAjv();
 ajv.addSchema({
   $schema: 'http://json-schema.org/draft-04/schema#',
   title: 'My Schema',
@@ -27,7 +27,7 @@ ajv.addSchema({
     'user'
   ]
 }, 'schemas://events/user/created/1.0.json');
-let validator = new JSONSchemaValidator(ajv);
+let validator = new JSONSchemaEventValidator(ajv);
 
 let manager = new EventManager(adapter, translator, validator);
 
