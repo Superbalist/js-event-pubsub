@@ -1,8 +1,19 @@
-"use strict";
+'use strict';
 
-var SimpleEvent = require('../events/SimpleEvent');
+let SimpleEvent = require('../events/SimpleEvent');
 
+/**
+ * SimpleEventMessageTranslator Class
+ *
+ * @implements {MessageTranslatorInterface}
+ */
 class SimpleEventMessageTranslator {
+  /**
+   * Translate a message into an event.
+   *
+   * @param {*} message
+   * @return {?SimpleEvent}
+   */
   translate(message) {
     // message must be an object
     // this is a simple check, but should work for all cases here

@@ -23,13 +23,13 @@ npm install @superbalist/js-event-pubsub
 A `SimpleEvent` is an event which takes a name and optional attributes.
 
 ```node
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var eventPubSub = require('@superbalist/js-event-pubsub');
-var EventManager = eventPubSub.EventManager;
-var SimpleEventMessageTranslator = eventPubSub.translators.SimpleEventMessageTranslator;
-var SimpleEvent = eventPubSub.events.SimpleEvent;
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let eventPubSub = require('@superbalist/js-event-pubsub');
+let EventManager = eventPubSub.EventManager;
+let SimpleEventMessageTranslator = eventPubSub.translators.SimpleEventMessageTranslator;
+let SimpleEvent = eventPubSub.events.SimpleEvent;
 
 // create a new event manager
 let adapter = new LocalPubSubAdapter();
@@ -46,7 +46,7 @@ manager.listen('events', '*', (event) => {
   console.log(event);
 });
 
-// publish an event
+// dispatch an event
 let event = new SimpleEvent('user.created', {
   user: {
     id: 1456,
@@ -63,13 +63,13 @@ manager.dispatch('events', event);
 A `TopicEvent` is an event which takes a topic, name, version and optional attributes.
 
 ```node
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var eventPubSub = require('@superbalist/js-event-pubsub');
-var EventManager = eventPubSub.EventManager;
-var TopicEventMessageTranslator = eventPubSub.translators.TopicEventMessageTranslator;
-var TopicEvent = eventPubSub.events.TopicEvent;
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let eventPubSub = require('@superbalist/js-event-pubsub');
+let EventManager = eventPubSub.EventManager;
+let TopicEventMessageTranslator = eventPubSub.translators.TopicEventMessageTranslator;
+let TopicEvent = eventPubSub.events.TopicEvent;
 
 // create a new event manager
 let adapter = new LocalPubSubAdapter();
@@ -121,14 +121,14 @@ version are derived from the schema.
 The schema must be in the format `(protocol)://(......)?/events/(topic)/(channel)/(version).json`
 
 ```node
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var eventPubSub = require('@superbalist/js-event-pubsub');
-var EventManager = eventPubSub.EventManager;
-var SchemaEventMessageTranslator = eventPubSub.translators.SchemaEventMessageTranslator;
-var JSONSchemaEventValidator = eventPubSub.validators.JSONSchemaEventValidator;
-var SchemaEvent = eventPubSub.events.SchemaEvent;
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let eventPubSub = require('@superbalist/js-event-pubsub');
+let EventManager = eventPubSub.EventManager;
+let SchemaEventMessageTranslator = eventPubSub.translators.SchemaEventMessageTranslator;
+let JSONSchemaEventValidator = eventPubSub.validators.JSONSchemaEventValidator;
+let SchemaEvent = eventPubSub.events.SchemaEvent;
 
 // create a new event manager
 let adapter = new LocalPubSubAdapter();
@@ -173,31 +173,90 @@ manager.dispatch('events', event);
 
 ### Custom Events
 
-You can easily use a custom event structure by writing a class which implements the following methods.
+You can easily use a custom event structure by writing a class which implements the `EventInterface` interface.
 You will then need to write a custom translator to translate incoming messages to your own event object.
+
+Your event must implement the following methods.
 
 ```node
 class CustomEvent {
+  /**
+   * Return the event name.
+   *
+   * @return {string}
+   * @example
+   * console.log(event.getName());
+   */
+  getName() {
+
+  }
+
+  /**
+   * Return all event attributes.
+   *
+   * @return {Object.<string, *>}
+   * @example
+   * console.log(event.getAttributes());
+   */
   getAttributes() {
 
   }
 
+  /**
+   * Return an event attribute.
+   *
+   * @param {string} name
+   * @return {*}
+   * @example
+   * console.log(event.getAttribute('user'));
+   */
   getAttribute(name) {
 
   }
 
+  /**
+   * Set an event attribute.
+   *
+   * @param {string} name
+   * @param {*} value
+   * @example
+   * event.setAttribute('first_name', 'Matthew');
+   */
   setAttribute(name, value) {
 
   }
 
+  /**
+   * Check whether or not an event has an attribute.
+   *
+   * @param {string} name
+   * @return {boolean}
+   * @example
+   * console.log(event.hasAttribute('user'));
+   */
   hasAttribute(name) {
 
   }
 
+  /**
+   * Return the event in a message format ready for publishing.
+   *
+   * @return {*}
+   * @example
+   * let message = event.toMessage();
+   */
   toMessage() {
 
   }
 
+  /**
+   * Check whether or not the event matches the given expression.
+   *
+   * @param {string} expr
+   * @return {boolean}
+   * @example
+   * console.log(event.matches('user/created/*'));
+   */
   matches(expr) {
 
   }
@@ -213,12 +272,20 @@ The package comes bundled with a `SimpleEventMessageTranslator`, `TopicEventMess
 
 ### Custom Translators
 
-You can easily write your own translator by writing a class which implements the following methods.
+You can easily write your own translator by implementing the `MessageTranslatorInterface` interface.
+
+Your translator must implement the following methods.
 
 ```node
 class CustomEventMessageTranslator {
+  /**
+   * Translate a message into an event.
+   *
+   * @param {*} message
+   * @return {?EventInterface}
+   */
   translate(message) {
-    // return your CustomEvent
+
   }
 }
 ```
@@ -238,12 +305,27 @@ Please see the "Schema Events" section above and the "Another JSON Schema Valida
 
 ### Custom Validators
 
-You can write your own validator by writinga  class which implements the following methods.
+You can write your own validator by implementing the `EventValidatorInterface` interface.
+
+Your validator must implement the following methods.
 
 ```node
 class CustomValidator {
+  /**
+   * Validates an event.
+   *
+   * @param {EventInterface} event
+   * @return {Promise}
+   * @example
+   * validator.validates(event).then(() => {
+   *   // event validates!
+   * }).catch((reason) => {
+   *   // event failed validation
+   *   console.log(reason);
+   * });
+   */
   validates(event) {
-    // return a promise
+
   }
 }
 ```
@@ -260,13 +342,13 @@ The library comes bundled with a few injectors out of the box.
 An injector is just a callable which returns an object with a key and value.
 
 ```node
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var eventPubSub = require('@superbalist/js-event-pubsub');
-var EventManager = eventPubSub.EventManager;
-var SimpleEventMessageTranslator = eventPubSub.translators.SimpleEventMessageTranslator;
-var SimpleEvent = eventPubSub.events.SimpleEvent;
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let eventPubSub = require('@superbalist/js-event-pubsub');
+let EventManager = eventPubSub.EventManager;
+let SimpleEventMessageTranslator = eventPubSub.translators.SimpleEventMessageTranslator;
+let SimpleEvent = eventPubSub.events.SimpleEvent;
 
 // create a new event manager
 let adapter = new LocalPubSubAdapter();

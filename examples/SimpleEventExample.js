@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var EventManager = require('../src/EventManager');
-var SimpleEventMessageTranslator = require('../src/translators/SimpleEventMessageTranslator');
-var SimpleEvent = require('../src/events/SimpleEvent');
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let EventManager = require('../src/EventManager');
+let SimpleEventMessageTranslator = require('../src/translators/SimpleEventMessageTranslator');
+let SimpleEvent = require('../src/events/SimpleEvent');
 
 let adapter = new LocalPubSubAdapter();
 let translator = new SimpleEventMessageTranslator();
@@ -27,8 +27,8 @@ let event = new SimpleEvent('user.created', {
     id: 1456,
     first_name: 'Joe',
     last_name: 'Soap',
-    email: 'joe.soap@example.org'
-  }
+    email: 'joe.soap@example.org',
+  },
 });
 
 manager.dispatch('events', event);

@@ -1,10 +1,13 @@
-"use strict";
+'use strict';
 
-var uuid = require('uuid/v4');
+let uuid = require('uuid/v4');
 
+/**
+ * @return {AttributeInjector}
+ */
 module.exports = () => {
   return {
     'key': 'uuid',
-    'value': uuid()
+    'value': uuid(),
   };
 };

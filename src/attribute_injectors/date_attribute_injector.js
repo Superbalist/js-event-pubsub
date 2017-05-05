@@ -1,8 +1,11 @@
-"use strict";
+'use strict';
 
+/**
+ * @return {AttributeInjector}
+ */
 module.exports = () => {
   return {
     'key': 'date',
-    'value': (new Date()).toISOString()
+    'value': (new Date()).toISOString(),
   };
 };

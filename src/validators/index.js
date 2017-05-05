@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-var JSONSchemaEventValidator = require('./JSONSchemaEventValidator');
+let JSONSchemaEventValidator = require('./JSONSchemaEventValidator');
 
 module.exports = {
-  JSONSchemaEventValidator: JSONSchemaEventValidator
+  JSONSchemaEventValidator: JSONSchemaEventValidator,
 };
