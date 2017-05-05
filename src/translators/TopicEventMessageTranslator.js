@@ -1,8 +1,19 @@
-"use strict";
+'use strict';
 
-var TopicEvent = require('../events/TopicEvent');
+let TopicEvent = require('../events/TopicEvent');
 
+/**
+ * TopicEventMessageTranslator Class
+ *
+ * @implements {MessageTranslatorInterface}
+ */
 class TopicEventMessageTranslator {
+  /**
+   * Translate a message into an event.
+   *
+   * @param {*} message
+   * @return {?TopicEvent}
+   */
   translate(message) {
     // message must be an object
     // this is a simple check, but should work for all cases here
@@ -23,7 +34,12 @@ class TopicEventMessageTranslator {
     delete attributes['event'];
     delete attributes['version'];
 
-    return new TopicEvent(message.topic, message.event, message.version, attributes);
+    return new TopicEvent(
+      message.topic,
+      message.event,
+      message.version,
+      attributes
+    );
   }
 }
 

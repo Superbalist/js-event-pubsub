@@ -1,10 +1,13 @@
-"use strict";
+'use strict';
 
-var os = require('os');
+let os = require('os');
 
+/**
+ * @return {AttributeInjector}
+ */
 module.exports = () => {
   return {
     'key': 'hostname',
-    'value': os.hostname()
+    'value': os.hostname(),
   };
 };

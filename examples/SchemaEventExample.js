@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var EventManager = require('../src/EventManager');
-var SchemaEventMessageTranslator = require('../src/translators/SchemaEventMessageTranslator');
-var JSONSchemaEventValidator = require('../src/validators/JSONSchemaEventValidator');
-var SchemaEvent = require('../src/events/SchemaEvent');
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let EventManager = require('../src/EventManager');
+let SchemaEventMessageTranslator = require('../src/translators/SchemaEventMessageTranslator');
+let JSONSchemaEventValidator = require('../src/validators/JSONSchemaEventValidator');
+let SchemaEvent = require('../src/events/SchemaEvent');
 
 let adapter = new LocalPubSubAdapter();
 let translator = new SchemaEventMessageTranslator();
@@ -16,16 +16,16 @@ ajv.addSchema({
   type: 'object',
   properties: {
     schema: {
-      type: 'string'
+      type: 'string',
     },
     user: {
-      type: 'object'
-    }
+      type: 'object',
+    },
   },
   required: [
     'schema',
-    'user'
-  ]
+    'user',
+  ],
 }, 'schemas://events/user/created/1.0.json');
 let validator = new JSONSchemaEventValidator(ajv);
 
@@ -43,8 +43,8 @@ let event = new SchemaEvent('schemas://events/user/created/1.0.json', {
     id: 1456,
     first_name: 'Joe',
     last_name: 'Soap',
-    email: 'joe.soap@example.org'
-  }
+    email: 'joe.soap@example.org',
+  },
 });
 
 manager.dispatch('events', event);

@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-var LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-var EventManager = require('../src/EventManager');
-var TopicEventMessageTranslator = require('../src/translators/TopicEventMessageTranslator');
-var TopicEvent = require('../src/events/TopicEvent');
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let EventManager = require('../src/EventManager');
+let TopicEventMessageTranslator = require('../src/translators/TopicEventMessageTranslator');
+let TopicEvent = require('../src/events/TopicEvent');
 
 let adapter = new LocalPubSubAdapter();
 let translator = new TopicEventMessageTranslator();
@@ -49,8 +49,8 @@ let event = new TopicEvent(
       id: 1456,
       first_name: 'Joe',
       last_name: 'Soap',
-      email: 'joe.soap@example.org'
-    }
+      email: 'joe.soap@example.org',
+    },
   }
 );
 
@@ -63,8 +63,8 @@ event = new TopicEvent(
   '2.1',
   {
     order: {
-      id: 1456
-    }
+      id: 1456,
+    },
   }
 );
 

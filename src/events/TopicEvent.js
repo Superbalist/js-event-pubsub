@@ -1,16 +1,65 @@
-"use strict";
+'use strict';
 
-var SimpleEvent = require('./SimpleEvent');
-var semver = require('semver');
+let SimpleEvent = require('./SimpleEvent');
+let semver = require('semver');
 
+/**
+ * @typedef {Object} ParsedEventExpression
+ * @property {string} topic
+ * @property {string} event
+ * @property {string} version
+ */
+
+/**
+ * TopicEvent Class
+ *
+ * @implements {EventInterface}
+ * @extends {SimpleEvent}
+ * @example
+ * let event = new TopicEvent(
+ *   'user',
+ *   'created',
+ *   '1.0',
+ *   {
+ *     user: {
+ *       id: 1456,
+ *       first_name: 'Joe',
+ *       last_name: 'Soap',
+ *       email: 'joe.soap@example.org'
+ *     }
+ *   }
+ * );
+ */
 class TopicEvent extends SimpleEvent {
+  /**
+   * Construct a TopicEvent
+   *
+   * @param {string} topic
+   * @param {string} name
+   * @param {string} version
+   * @param {Object.<string, *>} [attributes={}]
+   */
   constructor(topic, name, version, attributes = {}) {
     super(name, attributes);
 
+    /**
+     * @type {string}
+     */
     this.topic = topic;
+
+    /**
+     * @type {string}
+     */
     this.version = version;
   }
 
+  /**
+   * Return the event in a message format ready for publishing.
+   *
+   * @return {*}
+   * @example
+   * let message = event.toMessage();
+   */
   toMessage() {
     // we do a simple copy of the attributes
     let attributes = JSON.parse(JSON.stringify(this.attributes));
@@ -20,6 +69,14 @@ class TopicEvent extends SimpleEvent {
     return attributes;
   }
 
+  /**
+   * Check whether or not the event matches the given expression.
+   *
+   * @param {string} expr
+   * @return {boolean}
+   * @example
+   * console.log(event.matches('user/created/*'));
+   */
   matches(expr) {
     let params = TopicEvent.parseEventExpr(expr);
 
@@ -38,10 +95,20 @@ class TopicEvent extends SimpleEvent {
     if (params.version === '*') {
       return true;
     } else {
-      return semver.satisfies(TopicEvent.normaliseSemVerStr(this.version), params.version);
+      return semver.satisfies(
+        TopicEvent.normaliseSemVerStr(this.version),
+        params.version
+      );
     }
   }
 
+  /**
+   * Parse a event expression into a topic, event and version.
+   *
+   * @param {string} expr
+   * @return {ParsedEventExpression}
+   * @throws Error if the expression format is invalid
+   */
   static parseEventExpr(expr) {
     let match = expr.match(/^([\w*.,]+)(\/([\w*.,]+)(\/([\w*.,]+))?)?$/i);
     if (!match) {
@@ -61,10 +128,20 @@ class TopicEvent extends SimpleEvent {
     return {
       topic: topic,
       event: event,
-      version: version
-    }
+      version: version,
+    };
   }
 
+  /**
+   * Normalise a version string to a valid semver string.
+   *
+   * The semver library requires a string such as '1.0.0' when performing
+   * comparisons.  This function normalises strings such as '1', '1.0'
+   * into '1.0.0'.
+   *
+   * @param {string} version
+   * @return {string}
+   */
   static normaliseSemVerStr(version) {
     let match = version.match(/^v?(0|[1-9]\d*)(\.(0|[1-9]\d*))?(\.(0|[1-9]\d*))?$/);
     if (match) {

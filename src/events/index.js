@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-var SimpleEvent = require('./SimpleEvent');
-var TopicEvent = require('./TopicEvent');
-var SchemaEvent = require('./SchemaEvent');
+let SimpleEvent = require('./SimpleEvent');
+let TopicEvent = require('./TopicEvent');
+let SchemaEvent = require('./SchemaEvent');
 
 module.exports = {
   SimpleEvent: SimpleEvent,
   TopicEvent: TopicEvent,
-  SchemaEvent: SchemaEvent
+  SchemaEvent: SchemaEvent,
 };
