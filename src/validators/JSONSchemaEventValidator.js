@@ -12,11 +12,11 @@ class JSONSchemaEventValidator {
   /**
    * Construct a JSONSchemaEventValidator
    *
-   * @param {?ajv} [ajv=null]
+   * @param {?Ajv} [ajv=null]
    */
   constructor(ajv = null) {
     /**
-     * @type {ajv}
+     * @type {Ajv}
      */
     this.ajv = ajv || JSONSchemaEventValidator.makeDefaultAjv();
   }
@@ -25,9 +25,9 @@ class JSONSchemaEventValidator {
    * Validates an event.
    *
    * @param {SchemaEvent} event
-   * @return {Promise}
+   * @return {Promise<boolean>}
    * @example
-   * validator.validates(event).then(() => {
+   * validator.validates(event).then((success) => {
    *   // event validates!
    * }).catch((reason) => {
    *   // event failed validation
@@ -39,7 +39,7 @@ class JSONSchemaEventValidator {
       .then(function(validate) {
         return new Promise(function(resolve, reject) {
           if (validate(event.toMessage())) {
-            resolve();
+            resolve(true);
           } else {
             reject(validate.errors);
           }
@@ -51,7 +51,7 @@ class JSONSchemaEventValidator {
   /**
    * Factory a default instance of ajv.
    *
-   * @return {ajv}
+   * @return {Ajv}
    */
   static makeDefaultAjv() {
     let ajv = new Ajv({

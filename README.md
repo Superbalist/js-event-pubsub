@@ -315,9 +315,9 @@ class CustomValidator {
    * Validates an event.
    *
    * @param {EventInterface} event
-   * @return {Promise}
+   * @return {Promise<boolean>}
    * @example
-   * validator.validates(event).then(() => {
+   * validator.validates(event).then((success) => {
    *   // event validates!
    * }).catch((reason) => {
    *   // event failed validation

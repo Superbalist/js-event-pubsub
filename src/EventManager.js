@@ -108,6 +108,8 @@ class EventManager {
             this.validator.validates(event).then(() => {
               // event passed validation
               handler(event);
+            }).catch((reason) => {
+              // silently ignore
             });
           }
         }
