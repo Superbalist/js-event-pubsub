@@ -21,7 +21,7 @@ class TopicEventMessageTranslator {
       return null;
     }
 
-    // we must have an event property
+    // we must have all required properties
     for (let key of ['topic', 'event', 'version']) {
       if (!message.hasOwnProperty(key)) {
         return null;
