@@ -2,14 +2,14 @@
 
 /** @module @superbalist/js-event-pubsub */
 
-let attributeInjectors = require('./src/attribute_injectors');
-let events = require('./src/events');
-let translators = require('./src/translators');
-let validators = require('./src/validators');
-let EventManager = require('./src/EventManager');
-let MessageTranslatorInterface = require('./src/MessageTranslatorInterface');
-let EventValidatorInterface = require('./src/EventValidatorInterface');
-let EventInterface = require('./src/EventInterface');
+let attributeInjectors = require('./attribute_injectors/index');
+let events = require('./events/index');
+let translators = require('./translators/index');
+let validators = require('./validators/index');
+let EventManager = require('./EventManager');
+let MessageTranslatorInterface = require('./MessageTranslatorInterface');
+let EventValidatorInterface = require('./EventValidatorInterface');
+let EventInterface = require('./EventInterface');
 
 module.exports.attribute_injectors = attributeInjectors;
 module.exports.events = events;

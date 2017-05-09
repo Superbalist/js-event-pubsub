@@ -2,7 +2,7 @@
 
 let chai = require('chai');
 let expect = chai.expect;
-let SimpleEvent = require('../src/events/SimpleEvent');
+let SimpleEvent = require('../lib/events/SimpleEvent');
 
 describe('SimpleEvent', () => {
   describe('construct instance', () => {

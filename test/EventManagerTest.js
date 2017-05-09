@@ -5,11 +5,11 @@ let expect = chai.expect;
 let sinon = require('sinon');
 let pubsub = require('@superbalist/js-pubsub');
 let PubSubAdapterInterface = pubsub.PubSubAdapterInterface;
-let MessageTranslatorInterface = require('../src/MessageTranslatorInterface');
-let EventValidatorInterface = require('../src/EventValidatorInterface');
-let EventManager = require('../src/EventManager');
-let EventInterface = require('../src/EventInterface');
-let SimpleEvent = require('../src/events/SimpleEvent');
+let MessageTranslatorInterface = require('../lib/MessageTranslatorInterface');
+let EventValidatorInterface = require('../lib/EventValidatorInterface');
+let EventManager = require('../lib/EventManager');
+let EventInterface = require('../lib/EventInterface');
+let SimpleEvent = require('../lib/events/SimpleEvent');
 
 describe('EventManager', () => {
   describe('construct instance', () => {

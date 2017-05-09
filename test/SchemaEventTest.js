@@ -2,8 +2,8 @@
 
 let chai = require('chai');
 let expect = chai.expect;
-let SchemaEvent = require('../src/events/SchemaEvent');
-let TopicEvent = require('../src/events/TopicEvent');
+let SchemaEvent = require('../lib/events/SchemaEvent');
+let TopicEvent = require('../lib/events/TopicEvent');
 
 describe('SchemaEvent', () => {
   describe('construct instance', () => {

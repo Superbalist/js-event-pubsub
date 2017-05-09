@@ -2,12 +2,12 @@
 
 let chai = require('chai');
 let expect = chai.expect;
-let SimpleEventMessageTranslator = require('../src/translators/SimpleEventMessageTranslator');
-let TopicEventMessageTranslator = require('../src/translators/TopicEventMessageTranslator');
-let SchemaEventMessageTranslator = require('../src/translators/SchemaEventMessageTranslator');
-let SimpleEvent = require('../src/events/SimpleEvent');
-let TopicEvent = require('../src/events/TopicEvent');
-let SchemaEvent = require('../src/events/SchemaEvent');
+let SimpleEventMessageTranslator = require('../lib/translators/SimpleEventMessageTranslator');
+let TopicEventMessageTranslator = require('../lib/translators/TopicEventMessageTranslator');
+let SchemaEventMessageTranslator = require('../lib/translators/SchemaEventMessageTranslator');
+let SimpleEvent = require('../lib/events/SimpleEvent');
+let TopicEvent = require('../lib/events/TopicEvent');
+let SchemaEvent = require('../lib/events/SchemaEvent');
 
 describe('Message Translators', () => {
   describe('SimpleEventMessageTranslator', () => {
