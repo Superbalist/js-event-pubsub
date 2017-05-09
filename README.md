@@ -3,6 +3,7 @@
 An event protocol and implementation over pub/sub.
 
 [![Author](http://img.shields.io/badge/author-@superbalist-blue.svg?style=flat-square)](https://twitter.com/superbalist)
+[![Build Status](https://img.shields.io/travis/Superbalist/js-event-pubsub/master.svg?style=flat-square)](https://travis-ci.org/Superbalist/js-event-pubsub)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![NPM Version](https://img.shields.io/npm/v/@superbalist/js-event-pubsub.svg)](https://www.npmjs.com/package/@superbalist/js-event-pubsub)
 [![NPM Downloads](https://img.shields.io/npm/dt/@superbalist/js-event-pubsub.svg)](https://www.npmjs.com/package/@superbalist/js-event-pubsub)
