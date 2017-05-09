@@ -2,9 +2,9 @@
 
 let chai = require('chai');
 let expect = chai.expect;
-let dateAttributeInjector = require('../src/attribute_injectors/date_attribute_injector');
-let hostnameAttributeInjector = require('../src/attribute_injectors/hostname_attribute_injector');
-let uuid4AttributeInjector = require('../src/attribute_injectors/uuid4_attribute_injector');
+let dateAttributeInjector = require('../lib/attribute_injectors/date_attribute_injector');
+let hostnameAttributeInjector = require('../lib/attribute_injectors/hostname_attribute_injector');
+let uuid4AttributeInjector = require('../lib/attribute_injectors/uuid4_attribute_injector');
 let os = require('os');
 
 describe('Attribute Injectors', () => {

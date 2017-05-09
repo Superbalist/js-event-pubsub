@@ -1,9 +1,9 @@
 'use strict';
 
 let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-let EventManager = require('../src/EventManager');
-let TopicEventMessageTranslator = require('../src/translators/TopicEventMessageTranslator');
-let TopicEvent = require('../src/events/TopicEvent');
+let EventManager = require('../lib/EventManager');
+let TopicEventMessageTranslator = require('../lib/translators/TopicEventMessageTranslator');
+let TopicEvent = require('../lib/events/TopicEvent');
 
 let adapter = new LocalPubSubAdapter();
 let translator = new TopicEventMessageTranslator();

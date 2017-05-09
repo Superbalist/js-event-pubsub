@@ -6,8 +6,8 @@ let should = chai.should;
 let chaiAsPromised = require('chai-as-promised');
 let sinon = require('sinon');
 let Ajv = require('ajv');
-let JSONSchemaEventValidator = require('../src/validators/JSONSchemaEventValidator');
-let SchemaEvent = require('../src/events/SchemaEvent');
+let JSONSchemaEventValidator = require('../lib/validators/JSONSchemaEventValidator');
+let SchemaEvent = require('../lib/events/SchemaEvent');
 
 chai.use(chaiAsPromised);
 chai.should();

@@ -1,10 +1,10 @@
 'use strict';
 
 let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
-let EventManager = require('../src/EventManager');
-let SchemaEventMessageTranslator = require('../src/translators/SchemaEventMessageTranslator');
-let JSONSchemaEventValidator = require('../src/validators/JSONSchemaEventValidator');
-let SchemaEvent = require('../src/events/SchemaEvent');
+let EventManager = require('../lib/EventManager');
+let SchemaEventMessageTranslator = require('../lib/translators/SchemaEventMessageTranslator');
+let JSONSchemaEventValidator = require('../lib/validators/JSONSchemaEventValidator');
+let SchemaEvent = require('../lib/events/SchemaEvent');
 
 let adapter = new LocalPubSubAdapter();
 let translator = new SchemaEventMessageTranslator();
