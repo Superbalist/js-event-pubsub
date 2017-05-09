@@ -14,10 +14,11 @@ class EventValidatorInterface {
    * @return {Promise<boolean>}
    * @example
    * validator.validates(event).then((success) => {
-   *   // event validates!
-   * }).catch((reason) => {
-   *   // event failed validation
-   *   console.log(reason);
+   *   if (success) {
+   *     console.log('event validates!');
+   *   } else {
+   *     console.log('event failed validation');
+   *   }
    * });
    */
   validates(event) {

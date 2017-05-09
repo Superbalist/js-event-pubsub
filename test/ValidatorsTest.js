@@ -42,7 +42,7 @@ describe('Validators', () => {
         expect(promise).to.be.a('promise');
       });
 
-      it('should resolve a promise if validation passes', () => {
+      it('should resolve a promise to true if validation passes', () => {
         let validate = sinon.stub()
           .returns(true);
 
@@ -66,13 +66,9 @@ describe('Validators', () => {
           .should.eventually.be.true;
       });
 
-      it('should reject a promise with errors if validation fails', () => {
-        let errors = {
-          'beep': 'bop',
-        };
+      it('should resolve a promise to false if validation fails', () => {
         let validate = sinon.stub()
           .returns(false);
-        validate.errors = errors;
 
         let promise = new Promise((resolve, reject) => resolve(validate));
 
@@ -91,7 +87,7 @@ describe('Validators', () => {
 
             throw errors;
           })
-          .should.be.rejectedWith(errors);
+          .should.eventually.be.false;
       });
     });
 

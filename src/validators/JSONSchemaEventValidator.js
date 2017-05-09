@@ -28,22 +28,17 @@ class JSONSchemaEventValidator {
    * @return {Promise<boolean>}
    * @example
    * validator.validates(event).then((success) => {
-   *   // event validates!
-   * }).catch((reason) => {
-   *   // event failed validation
-   *   console.log(reason);
+   *   if (success) {
+   *     console.log('event validates!');
+   *   } else {
+   *     console.log('event failed validation');
+   *   }
    * });
    */
   validates(event) {
     return this.ajv.compileAsync({$ref: event.schema})
       .then(function(validate) {
-        return new Promise(function(resolve, reject) {
-          if (validate(event.toMessage())) {
-            resolve(true);
-          } else {
-            reject(validate.errors);
-          }
-        });
+        return validate(event.toMessage());
       }
     );
   }

@@ -105,11 +105,11 @@ class EventManager {
             // not using a validator
             handler(event);
           } else {
-            this.validator.validates(event).then(() => {
-              // event passed validation
-              handler(event);
-            }).catch((reason) => {
-              // silently ignore
+            this.validator.validates(event).then((success) => {
+              if (success) {
+                // event passed validation
+                handler(event);
+              }
             });
           }
         }

@@ -285,7 +285,7 @@ describe('EventManager', () => {
         .returns(event);
 
       let validationPromise = new Promise((resolve, reject) => {
-        reject({'error': 'meh'});
+        resolve(false);
       });
 
       let validator = sinon.createStubInstance(EventValidatorInterface);
@@ -300,7 +300,7 @@ describe('EventManager', () => {
 
       adapter.subscribe.yield({'event': 'user.created'});
 
-      return validationPromise.catch((reason) => {
+      return validationPromise.then(() => {
         sinon.assert.notCalled(handler);
       });
     });
