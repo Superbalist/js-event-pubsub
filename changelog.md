@@ -3,6 +3,7 @@
 ## 2.0.0 - 2017-05-17
 
 * Bump up @superbalist/js-pubsub to ^2.0.0
+* Add new dispatchBatch method for dispatching multiple events at once
 
 ## 1.0.1 - 2017-05-09
 

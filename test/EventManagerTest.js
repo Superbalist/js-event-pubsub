@@ -378,4 +378,75 @@ describe('EventManager', () => {
       );
     });
   });
+
+  describe('dispatchBatch', () => {
+      it('should convert the events to an array of message and publish to the channel', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+      adapter.publishBatch = sinon.stub();
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+      let manager = new EventManager(adapter, translator);
+
+      let event1 = sinon.createStubInstance(EventInterface);
+      event1.toMessage = sinon.stub()
+        .returns({'event': 'user.created'});
+
+      let event2 = sinon.createStubInstance(EventInterface);
+      event2.toMessage = sinon.stub()
+        .returns({'event': 'order.created'});
+
+      let events = [event1, event2];
+
+      manager.dispatchBatch('my_channel', events);
+
+      sinon.assert.calledOnce(event1.toMessage);
+      sinon.assert.calledOnce(event2.toMessage);
+
+      sinon.assert.calledOnce(adapter.publishBatch);
+      sinon.assert.calledWith(
+        adapter.publishBatch,
+        'my_channel',
+        [
+          {'event': 'user.created'},
+          {'event': 'order.created'},
+        ]
+      );
+    });
+
+    it('should automagically inject values from attribute injectors into the message payload', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+      adapter.publishBatch = sinon.stub();
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+      let manager = new EventManager(adapter, translator);
+
+      manager.addAttributeInjector(() => ({key: 'service', value: 'search'}));
+      manager.addAttributeInjector(() => ({key: 'hello', value: 'world'}));
+
+      let event1 = new SimpleEvent('user.created');
+      let event2 = new SimpleEvent('order.created');
+
+      let events = [event1, event2];
+
+      manager.dispatchBatch('my_channel', events);
+
+      sinon.assert.calledOnce(adapter.publishBatch);
+      sinon.assert.calledWith(
+        adapter.publishBatch,
+        'my_channel',
+        [
+          {
+            'event': 'user.created',
+            'service': 'search',
+            'hello': 'world',
+          },
+          {
+            'event': 'order.created',
+            'service': 'search',
+            'hello': 'world',
+          },
+        ]
+      );
+    });
+  });
 });

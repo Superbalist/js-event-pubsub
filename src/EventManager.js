@@ -135,6 +135,29 @@ class EventManager {
   }
 
   /**
+   * @param {EventInterface} event
+   * @return {EventInterface}
+   * @private
+   */
+  _prepEventForDispatch(event) {
+    // automagically inject attributes from injectors
+    let attributes = this._getValuesFromAttributeInjectors();
+
+    // we don't want to manipulate the original event
+    let e = Object.assign(Object.create(event), event);
+    for (let k in attributes) {
+      if (attributes.hasOwnProperty(k)) {
+        // only set injected attribute if event doesn't already have attribute
+        if (!e.hasAttribute(k)) {
+          let v = attributes[k];
+          e.setAttribute(k, v);
+        }
+      }
+    }
+    return e;
+  }
+
+  /**
    * Dispatch an event.
    *
    * @param {string} channel
@@ -152,22 +175,43 @@ class EventManager {
    * manager->dispatch('events', event);
    */
   dispatch(channel, event) {
-    // automagically inject attributes from injectors
-    let attributes = this._getValuesFromAttributeInjectors();
+    event = this._prepEventForDispatch(event);
+    this.adapter.publish(channel, event.toMessage());
+  }
 
-    // we don't want to manipulate the original event
-    let e = Object.assign(Object.create(event), event);
-    for (let k in attributes) {
-      if (attributes.hasOwnProperty(k)) {
-        // only set injected attribute if event doesn't already have attribute
-        if (!e.hasAttribute(k)) {
-          let v = attributes[k];
-          e.setAttribute(k, v);
-        }
-      }
-    }
-
-    this.adapter.publish(channel, e.toMessage());
+  /**
+   * Dispatch multiple events.
+   *
+   * @param {string} channel
+   * @param {EventInterface[]} events
+   * @example
+   * let events = [
+   *   new SimpleEvent('user.created', {
+   *     user: {
+   *       id: 1456,
+   *       first_name: 'Joe',
+   *       last_name: 'Soap',
+   *       email: 'joe.soap@example.org'
+   *     }
+   *   }),
+   *   new SimpleEvent('user.created', {
+   *     user: {
+   *       id: 6812,
+   *       first_name: 'Joe',
+   *       last_name: 'Soap',
+   *       email: 'joe.soap@example.org'
+   *     }
+   *   }),
+   * ];
+   *
+   * manager->dispatchBatch('events', events);
+   */
+  dispatchBatch(channel, events) {
+    let messages = events.map((event) => {
+      event = this._prepEventForDispatch(event);
+      return event.toMessage();
+    });
+    this.adapter.publishBatch(channel, messages);
   }
 }
 

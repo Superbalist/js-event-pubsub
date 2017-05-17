@@ -57,6 +57,21 @@ let event = new SimpleEvent('user.created', {
   }
 });
 manager.dispatch('events', event);
+
+// dispatch multiple events
+let events = [
+  new SimpleEvent('user.created', {
+    user: {
+      // ...
+    }
+  }),
+  new SimpleEvent('user.created', {
+    user: {
+      // ...
+    }
+  }),
+];
+manager.dispatchBatch('events', event);
 ```
 
 ### Topic Events
