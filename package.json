@@ -1,6 +1,6 @@
 {
   "name": "@superbalist/js-event-pubsub",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "An event protocol and implementation over pub/sub",
   "main": "lib/index.js",
   "scripts": {
