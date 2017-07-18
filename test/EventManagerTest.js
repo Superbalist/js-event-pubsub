@@ -10,6 +10,7 @@ let EventValidatorInterface = require('../lib/EventValidatorInterface');
 let EventManager = require('../lib/EventManager');
 let EventInterface = require('../lib/EventInterface');
 let SimpleEvent = require('../lib/events/SimpleEvent');
+let ValidationResult = require('../lib/ValidationResult');
 
 describe('EventManager', () => {
   describe('construct instance', () => {
@@ -205,7 +206,7 @@ describe('EventManager', () => {
         .returns(event);
 
       let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validates = sinon.stub()
+      validator.validate = sinon.stub()
         .returns(new Promise((resolve, reject) => {}));
 
       let manager = new EventManager(adapter, translator, validator);
@@ -216,8 +217,8 @@ describe('EventManager', () => {
 
       adapter.subscribe.yield({'event': 'user.created'});
 
-      sinon.assert.calledOnce(validator.validates);
-      sinon.assert.calledWith(validator.validates, event);
+      sinon.assert.calledOnce(validator.validate);
+      sinon.assert.calledWith(validator.validate, event);
     });
 
     it('when a message is received & the translator fails, the handler should not be called', () => {
@@ -350,12 +351,15 @@ describe('EventManager', () => {
       translator.translate = sinon.stub()
         .returns(event);
 
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult = new ValidationResult(validator, event, true);
+
       let validationPromise = new Promise((resolve, reject) => {
-        resolve(true);
+        resolve(validationResult);
       });
 
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validates = sinon.stub()
+      validator.validate = sinon.stub()
         .returns(validationPromise);
 
       let manager = new EventManager(adapter, translator, validator);
@@ -384,12 +388,15 @@ describe('EventManager', () => {
       translator.translate = sinon.stub()
         .returns(event);
 
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
+
       let validationPromise = new Promise((resolve, reject) => {
-        resolve(false);
+        resolve(validationResult);
       });
 
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validates = sinon.stub()
+      validator.validate = sinon.stub()
         .returns(validationPromise);
 
       let manager = new EventManager(adapter, translator, validator);
@@ -418,12 +425,15 @@ describe('EventManager', () => {
     translator.translate = sinon.stub()
       .returns(event);
 
+    let validator = sinon.createStubInstance(EventValidatorInterface);
+
+    let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
+
     let validationPromise = new Promise((resolve, reject) => {
-      resolve(false);
+      resolve(validationResult);
     });
 
-    let validator = sinon.createStubInstance(EventValidatorInterface);
-    validator.validates = sinon.stub()
+    validator.validate = sinon.stub()
       .returns(validationPromise);
 
     let validationFailHandler = sinon.spy();
@@ -441,7 +451,7 @@ describe('EventManager', () => {
       sinon.assert.notCalled(handler);
 
       sinon.assert.calledOnce(validationFailHandler);
-      sinon.assert.calledWith(validationFailHandler, event, validator);
+      sinon.assert.calledWith(validationFailHandler, validationResult);
     });
   });
 

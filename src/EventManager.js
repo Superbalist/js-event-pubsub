@@ -148,14 +148,14 @@ class EventManager {
             // not using a validator
             handler(event);
           } else {
-            this.validator.validates(event).then((success) => {
-              if (success) {
+            this.validator.validate(event).then((result) => {
+              if (result.passes) {
                 // event passed validation
                 handler(event);
               } else {
                 // pass to validation fail handler?
                 if (this.validationFailHandler) {
-                  this.validationFailHandler(event, this.validator);
+                  this.validationFailHandler(result);
                 }
               }
             });

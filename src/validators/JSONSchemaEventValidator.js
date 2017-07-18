@@ -2,6 +2,7 @@
 
 let Ajv = require('ajv');
 let request = require('request-promise-native');
+let ValidationResult = require('../ValidationResult');
 
 /**
  * JSONSchemaEventValidator Class
@@ -22,23 +23,33 @@ class JSONSchemaEventValidator {
   }
 
   /**
-   * Validates an event.
+   * Validate an event.
    *
    * @param {SchemaEvent} event
-   * @return {Promise<boolean>}
+   * @return {Promise<ValidationResult>}
    * @example
-   * validator.validates(event).then((success) => {
-   *   if (success) {
+   * validator.validate(event).then((result) => {
+   *   if (result.passes) {
    *     console.log('event validates!');
    *   } else {
    *     console.log('event failed validation');
+   *     console.log(result.errors);
    *   }
    * });
    */
-  validates(event) {
+  validate(event) {
+    let _this = this;
+
     return this.ajv.compileAsync({$ref: event.schema})
       .then(function(validate) {
-        return validate(event.toMessage());
+        if (validate(event.toMessage())) {
+          return new ValidationResult(_this, event, true);
+        } else {
+          let errors = validate.errors.map((error) => {
+            return error.message;
+          });
+          return new ValidationResult(_this, event, false, errors);
+        }
       }
     );
   }

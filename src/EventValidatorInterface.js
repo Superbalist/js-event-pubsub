@@ -8,20 +8,21 @@
  */
 class EventValidatorInterface {
   /**
-   * Validates an event.
+   * Validate an event.
    *
    * @param {EventInterface} event
-   * @return {Promise<boolean>}
+   * @return {Promise<ValidationResult>}
    * @example
-   * validator.validates(event).then((success) => {
-   *   if (success) {
+   * validator.validate(event).then((result) => {
+   *   if (result.passes) {
    *     console.log('event validates!');
    *   } else {
    *     console.log('event failed validation');
+   *     console.log(result.errors);
    *   }
    * });
    */
-  validates(event) {
+  validate(event) {
 
   }
 }
