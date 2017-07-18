@@ -18,8 +18,7 @@
 
 /**
  * @callback validationFailCallback
- * @param {EventInterface} event
- * @param {EventValidatorInterface} validator
+ * @param {ValidationResult} result
  */
 
 /**
