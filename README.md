@@ -421,7 +421,7 @@ manager.listenExprFailHandler = (event, expr) => {
 // hook into validation failures
 manager.validationFailHandler = (result) => {
   // the event failed validation
-  console.log(result.errors());
+  console.log(result.errors);
 };
 ```
 
