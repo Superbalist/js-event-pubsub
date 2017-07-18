@@ -5,6 +5,9 @@
 * EventValidatorInterface->validates() renamed to ->validate()
 * EventValidatorInterface->validate() now returns a promise resolving to a ValidationResult instance instead of bool
 * The validation fail handler callback now receives a ValidationResult instead of the event and a validator
+* dispatch() now returns a promise
+* dispatchBatch() now returns a promise
+* Events are now validated on dispatch, and will reject the promise with a ValidationResult when validation fails
 
 ## 2.0.1 - 2017-07-18
 

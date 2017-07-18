@@ -220,6 +220,7 @@ class EventManager {
    *
    * @param {string} channel
    * @param {EventInterface} event
+   * @return {Promise<*>}
    * @example
    * let event = new SimpleEvent('user.created', {
    *   user: {
@@ -233,8 +234,30 @@ class EventManager {
    * manager->dispatch('events', event);
    */
   dispatch(channel, event) {
-    event = this._prepEventForDispatch(event);
-    this.adapter.publish(channel, event.toMessage());
+    return new Promise((resolve, reject) => {
+      event = this._prepEventForDispatch(event);
+
+      let publishAndResolve = () => {
+        return this.adapter.publish(channel, event.toMessage()).then(resolve);
+      };
+
+      if (this.validator) {
+        this.validator.validate(event).then((result) => {
+          if (result.passes) {
+            publishAndResolve();
+          } else {
+            // pass to validation fail handler?
+            if (this.validationFailHandler) {
+              this.validationFailHandler(result);
+            }
+
+            reject(result);
+          }
+        });
+      } else {
+        publishAndResolve();
+      }
+    });
   }
 
   /**
@@ -242,6 +265,7 @@ class EventManager {
    *
    * @param {string} channel
    * @param {EventInterface[]} events
+   * @return {Promise<*>}
    * @example
    * let events = [
    *   new SimpleEvent('user.created', {
@@ -265,11 +289,46 @@ class EventManager {
    * manager->dispatchBatch('events', events);
    */
   dispatchBatch(channel, events) {
-    let messages = events.map((event) => {
-      event = this._prepEventForDispatch(event);
-      return event.toMessage();
+    return new Promise((resolve, reject) => {
+      let validators = [];
+      let messages = [];
+
+      for (let event of events) {
+        event = this._prepEventForDispatch(event);
+
+        messages.push(event.toMessage());
+
+        if (this.validator) {
+          validators.push(this.validator.validate(event));
+        }
+      }
+
+      Promise.all(validators).then((results) => {
+        let validates = true;
+        let firstFailedResult = null;
+
+        for (let result of results) {
+          if (result.fails) {
+            // when we hit the first event that fails validation,
+            // we'll break out of here and reject the promise
+            firstFailedResult = result;
+            validates = false;
+            break;
+          }
+        }
+
+        if (validates) {
+          this.adapter.publishBatch(channel, messages).then(resolve);
+        } else {
+          // pass to validation fail handler?
+          if (this.validationFailHandler) {
+            this.validationFailHandler(firstFailedResult);
+          }
+
+          reject(firstFailedResult);
+        }
+      });
     });
-    this.adapter.publishBatch(channel, messages);
   }
 }
 

@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/Superbalist/js-event-pubsub#readme",
   "dependencies": {
-    "@superbalist/js-pubsub": "^2.0.0",
+    "@superbalist/js-pubsub": "^3.0.0",
     "ajv": "^5.0.1",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.3",
