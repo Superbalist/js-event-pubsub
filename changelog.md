@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1 - 2017-07-18
+
+* Add support for translate, listen expr & validation failure callbacks
+
 ## 2.0.0 - 2017-05-17
 
 * Bump up @superbalist/js-pubsub to ^2.0.0

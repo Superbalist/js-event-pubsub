@@ -6,6 +6,23 @@
  */
 
 /**
+ * @callback translateFailCallback
+ * @param {string} message
+ */
+
+/**
+ * @callback listenExprFailCallback
+ * @param {EventInterface} event
+ * @param {string} expr
+ */
+
+/**
+ * @callback validationFailCallback
+ * @param {EventInterface} event
+ * @param {EventValidatorInterface} validator
+ */
+
+/**
  * EventManager Class
  *
  * @example
@@ -27,8 +44,19 @@ class EventManager {
    * @param {MessageTranslatorInterface} translator
    * @param {?EventValidatorInterface} [validator=null]
    * @param {attributeInjectorCallback[]} [attributeInjectors=[]]
+   * @param {?translateFailCallback} [translateFailHandler=null]
+   * @param {?listenExprFailCallback} [listenExprFailHandler=null]
+   * @param {?validationFailCallback} [validationFailHandler=null]
    */
-  constructor(adapter, translator, validator = null, attributeInjectors = []) {
+  constructor(
+    adapter,
+    translator,
+    validator = null,
+    attributeInjectors = [],
+    translateFailHandler = null,
+    listenExprFailHandler = null,
+    validationFailHandler = null
+  ) {
     /**
      * @type {module:@superbalist/js-pubsub.PubSubAdapterInterface}
      */
@@ -48,6 +76,21 @@ class EventManager {
      * @type {attributeInjectorCallback[]}
      */
     this.attributeInjectors = attributeInjectors;
+
+    /**
+     * @type {translateFailCallback}
+     */
+    this.translateFailHandler = translateFailHandler;
+
+    /**
+     * @type {listenExprFailCallback}
+     */
+    this.listenExprFailHandler = listenExprFailHandler;
+
+    /**
+     * @type {validationFailCallback}
+     */
+    this.validationFailHandler = validationFailHandler;
   }
 
   /**
@@ -109,9 +152,24 @@ class EventManager {
               if (success) {
                 // event passed validation
                 handler(event);
+              } else {
+                // pass to validation fail handler?
+                if (this.validationFailHandler) {
+                  this.validationFailHandler(event, this.validator);
+                }
               }
             });
           }
+        } else {
+          // pass to listen expr fail handler?
+          if (this.listenExprFailHandler) {
+            this.listenExprFailHandler(event, expr);
+          }
+        }
+      } else {
+        // pass to translate fail handler?
+        if (this.translateFailHandler) {
+          this.translateFailHandler(message);
         }
       }
     });

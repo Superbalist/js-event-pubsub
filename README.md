@@ -386,6 +386,43 @@ manager.addAttributeInjector(() => ({key: 'service', value: 'search'}));
 // now all dispatched events will have these attributes automagically injected
 ```
 
+## Error Handling
+
+The library supports error handlers for when event translation fails, listen expression fails and validation fails.
+
+You can pass callables into the EventManager constructor, or set them as follows:
+
+```node
+'use strict';
+
+let LocalPubSubAdapter = require('@superbalist/js-pubsub').LocalPubSubAdapter;
+let eventPubSub = require('@superbalist/js-event-pubsub');
+let EventManager = eventPubSub.EventManager;
+let SimpleEventMessageTranslator = eventPubSub.translators.SimpleEventMessageTranslator;
+let SimpleEvent = eventPubSub.events.SimpleEvent;
+
+// create a new event manager
+let adapter = new LocalPubSubAdapter();
+let translator = new SimpleEventMessageTranslator();
+let manager = new EventManager(adapter, translator);
+
+// hook into translation failures
+manager.translateFailHandler = (message) => {
+  // the message failed to translate into an event
+};
+
+// hook into listen expression failures
+manager.listenExprFailHandler = (event, expr) => {
+  // the event didn't match the listen expression
+  // this isn't really an error, but can be useful for debug
+};
+
+// hook into validation failures
+manager.validationFailHandler = (event, validator) => {
+  // the event failed validation
+};
+```
+
 ## Examples
 
 The library comes with [examples](examples) for the different typoes of events and a [Dockerfile](Dockerfile) for
