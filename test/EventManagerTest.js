@@ -10,6 +10,7 @@ let EventValidatorInterface = require('../lib/EventValidatorInterface');
 let EventManager = require('../lib/EventManager');
 let EventInterface = require('../lib/EventInterface');
 let SimpleEvent = require('../lib/events/SimpleEvent');
+let ValidationResult = require('../lib/ValidationResult');
 
 describe('EventManager', () => {
   describe('construct instance', () => {
@@ -205,7 +206,7 @@ describe('EventManager', () => {
         .returns(event);
 
       let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validates = sinon.stub()
+      validator.validate = sinon.stub()
         .returns(new Promise((resolve, reject) => {}));
 
       let manager = new EventManager(adapter, translator, validator);
@@ -216,8 +217,8 @@ describe('EventManager', () => {
 
       adapter.subscribe.yield({'event': 'user.created'});
 
-      sinon.assert.calledOnce(validator.validates);
-      sinon.assert.calledWith(validator.validates, event);
+      sinon.assert.calledOnce(validator.validate);
+      sinon.assert.calledWith(validator.validate, event);
     });
 
     it('when a message is received & the translator fails, the handler should not be called', () => {
@@ -350,12 +351,15 @@ describe('EventManager', () => {
       translator.translate = sinon.stub()
         .returns(event);
 
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult = new ValidationResult(validator, event, true);
+
       let validationPromise = new Promise((resolve, reject) => {
-        resolve(true);
+        resolve(validationResult);
       });
 
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validates = sinon.stub()
+      validator.validate = sinon.stub()
         .returns(validationPromise);
 
       let manager = new EventManager(adapter, translator, validator);
@@ -384,12 +388,15 @@ describe('EventManager', () => {
       translator.translate = sinon.stub()
         .returns(event);
 
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
+
       let validationPromise = new Promise((resolve, reject) => {
-        resolve(false);
+        resolve(validationResult);
       });
 
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validates = sinon.stub()
+      validator.validate = sinon.stub()
         .returns(validationPromise);
 
       let manager = new EventManager(adapter, translator, validator);
@@ -418,12 +425,15 @@ describe('EventManager', () => {
     translator.translate = sinon.stub()
       .returns(event);
 
+    let validator = sinon.createStubInstance(EventValidatorInterface);
+
+    let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
+
     let validationPromise = new Promise((resolve, reject) => {
-      resolve(false);
+      resolve(validationResult);
     });
 
-    let validator = sinon.createStubInstance(EventValidatorInterface);
-    validator.validates = sinon.stub()
+    validator.validate = sinon.stub()
       .returns(validationPromise);
 
     let validationFailHandler = sinon.spy();
@@ -441,14 +451,15 @@ describe('EventManager', () => {
       sinon.assert.notCalled(handler);
 
       sinon.assert.calledOnce(validationFailHandler);
-      sinon.assert.calledWith(validationFailHandler, event, validator);
+      sinon.assert.calledWith(validationFailHandler, validationResult);
     });
   });
 
   describe('dispatch', () => {
     it('should convert the event to a message and publish to the channel', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.publish = sinon.stub();
+      adapter.publish = sinon.stub()
+        .returns(Promise.resolve('result'));
 
       let translator = sinon.createStubInstance(MessageTranslatorInterface);
       let manager = new EventManager(adapter, translator);
@@ -457,17 +468,20 @@ describe('EventManager', () => {
       event.toMessage = sinon.stub()
         .returns({'event': 'user.created'});
 
-      manager.dispatch('my_channel', event);
+      return manager.dispatch('my_channel', event).then((result) => {
+        sinon.assert.calledOnce(event.toMessage);
 
-      sinon.assert.calledOnce(event.toMessage);
+        sinon.assert.calledOnce(adapter.publish);
+        sinon.assert.calledWith(adapter.publish, 'my_channel', {'event': 'user.created'});
 
-      sinon.assert.calledOnce(adapter.publish);
-      sinon.assert.calledWith(adapter.publish, 'my_channel', {'event': 'user.created'});
+        expect(result).to.equal('result');
+      });
     });
 
     it('should automagically inject values from attribute injectors into the message payload', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.publish = sinon.stub();
+      adapter.publish = sinon.stub()
+        .returns(Promise.resolve('result'));
 
       let translator = sinon.createStubInstance(MessageTranslatorInterface);
       let manager = new EventManager(adapter, translator);
@@ -477,23 +491,110 @@ describe('EventManager', () => {
 
       let event = new SimpleEvent('user.created');
 
-      manager.dispatch('my_channel', event);
+      return manager.dispatch('my_channel', event).then((result) => {
+        sinon.assert.calledOnce(adapter.publish);
+        sinon.assert.calledWith(
+          adapter.publish,
+          'my_channel',
+          {
+            'event': 'user.created',
+            'service': 'search',
+            'hello': 'world',
+          }
+        );
 
-      sinon.assert.calledOnce(adapter.publish);
-      sinon.assert.calledWith(
-        adapter.publish,
-        'my_channel',
-        {
-          'event': 'user.created',
-          'service': 'search',
-          'hello': 'world',
-        }
-      );
+        expect(result).to.equal('result');
+      });
+    });
+
+    it('should convert the event to a message and publish to the channel, when a validator is set and validation passes', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+      adapter.publish = sinon.stub()
+        .returns(Promise.resolve('result'));
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+
+      let event = sinon.createStubInstance(EventInterface);
+      event.toMessage = sinon.stub()
+        .returns({'event': 'user.created'});
+
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+      validator.validate = sinon.stub()
+        .returns(Promise.resolve(new ValidationResult(validator, event, true)));
+
+      let manager = new EventManager(adapter, translator, validator);
+
+      return manager.dispatch('my_channel', event).then((result) => {
+        sinon.assert.calledOnce(event.toMessage);
+
+        sinon.assert.calledOnce(validator.validate);
+        sinon.assert.calledWith(validator.validate, event);
+
+        sinon.assert.calledOnce(adapter.publish);
+        sinon.assert.calledWith(adapter.publish, 'my_channel', {'event': 'user.created'});
+
+        expect(result).to.equal('result');
+      });
+    });
+
+    it('should reject the promise when a validator is set and validation fails', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+
+      let event = sinon.createStubInstance(EventInterface);
+
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
+
+      validator.validate = sinon.stub()
+        .returns(Promise.resolve(validationResult));
+
+      let manager = new EventManager(adapter, translator, validator);
+
+      return manager.dispatch('my_channel', event).catch((reason) => {
+        sinon.assert.calledOnce(validator.validate);
+        sinon.assert.calledWith(validator.validate, event);
+
+        expect(reason).to.equal(validationResult);
+      });
+    });
+
+    it('should call the validationFailHandler when a validator is set and validation fails', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+
+      let event = sinon.createStubInstance(EventInterface);
+
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
+
+      validator.validate = sinon.stub()
+        .returns(Promise.resolve(validationResult));
+
+      let validationFailHandler = sinon.spy();
+
+      let manager = new EventManager(adapter, translator, validator);
+      manager.validationFailHandler = validationFailHandler;
+
+      return manager.dispatch('my_channel', event).catch((reason) => {
+        sinon.assert.calledOnce(validator.validate);
+        sinon.assert.calledWith(validator.validate, event);
+
+        sinon.assert.calledOnce(validationFailHandler);
+        sinon.assert.calledWith(validationFailHandler, validationResult);
+
+        expect(reason).to.equal(validationResult);
+      });
     });
 
     it('should automagically inject values from attribute injectors into the message payload but not override conflicting attributes', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.publish = sinon.stub();
+      adapter.publish = sinon.stub()
+        .returns(Promise.resolve('result'));
 
       let translator = sinon.createStubInstance(MessageTranslatorInterface);
       let manager = new EventManager(adapter, translator);
@@ -503,25 +604,28 @@ describe('EventManager', () => {
 
       let event = new SimpleEvent('user.created', {'service': 'www'});
 
-      manager.dispatch('my_channel', event);
+      return manager.dispatch('my_channel', event).then((result) => {
+        sinon.assert.calledOnce(adapter.publish);
+        sinon.assert.calledWith(
+          adapter.publish,
+          'my_channel',
+          {
+            'event': 'user.created',
+            'service': 'www',
+            'hello': 'world',
+          }
+        );
 
-      sinon.assert.calledOnce(adapter.publish);
-      sinon.assert.calledWith(
-        adapter.publish,
-        'my_channel',
-        {
-          'event': 'user.created',
-          'service': 'www',
-          'hello': 'world',
-        }
-      );
+        expect(result).to.equal('result');
+      });
     });
   });
 
   describe('dispatchBatch', () => {
-      it('should convert the events to an array of message and publish to the channel', () => {
+    it('should convert the events to an array of message and publish to the channel', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.publishBatch = sinon.stub();
+      adapter.publishBatch = sinon.stub()
+        .returns(Promise.resolve(['result1', 'result2']));
 
       let translator = sinon.createStubInstance(MessageTranslatorInterface);
       let manager = new EventManager(adapter, translator);
@@ -536,25 +640,28 @@ describe('EventManager', () => {
 
       let events = [event1, event2];
 
-      manager.dispatchBatch('my_channel', events);
+      return manager.dispatchBatch('my_channel', events).then((results) => {
+        sinon.assert.calledOnce(event1.toMessage);
+        sinon.assert.calledOnce(event2.toMessage);
 
-      sinon.assert.calledOnce(event1.toMessage);
-      sinon.assert.calledOnce(event2.toMessage);
+        sinon.assert.calledOnce(adapter.publishBatch);
+        sinon.assert.calledWith(
+          adapter.publishBatch,
+          'my_channel',
+          [
+            {'event': 'user.created'},
+            {'event': 'order.created'},
+          ]
+        );
 
-      sinon.assert.calledOnce(adapter.publishBatch);
-      sinon.assert.calledWith(
-        adapter.publishBatch,
-        'my_channel',
-        [
-          {'event': 'user.created'},
-          {'event': 'order.created'},
-        ]
-      );
+        expect(results).to.deep.equal(['result1', 'result2']);
+      });
     });
 
     it('should automagically inject values from attribute injectors into the message payload', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.publishBatch = sinon.stub();
+      adapter.publishBatch = sinon.stub()
+        .returns(Promise.resolve(['result1', 'result2']));
 
       let translator = sinon.createStubInstance(MessageTranslatorInterface);
       let manager = new EventManager(adapter, translator);
@@ -567,25 +674,142 @@ describe('EventManager', () => {
 
       let events = [event1, event2];
 
-      manager.dispatchBatch('my_channel', events);
+      return manager.dispatchBatch('my_channel', events).then((results) => {
+        sinon.assert.calledOnce(adapter.publishBatch);
+        sinon.assert.calledWith(
+          adapter.publishBatch,
+          'my_channel',
+          [
+            {
+              'event': 'user.created',
+              'service': 'search',
+              'hello': 'world',
+            },
+            {
+              'event': 'order.created',
+              'service': 'search',
+              'hello': 'world',
+            },
+          ]
+        );
 
-      sinon.assert.calledOnce(adapter.publishBatch);
-      sinon.assert.calledWith(
-        adapter.publishBatch,
-        'my_channel',
-        [
-          {
-            'event': 'user.created',
-            'service': 'search',
-            'hello': 'world',
-          },
-          {
-            'event': 'order.created',
-            'service': 'search',
-            'hello': 'world',
-          },
-        ]
-      );
+        expect(results).to.deep.equal(['result1', 'result2']);
+      });
+    });
+
+    it('should convert the events to an array of message and publish to the channel, when a validator is set and validation passes', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+      adapter.publishBatch = sinon.stub()
+        .returns(Promise.resolve(['result1', 'result2']));
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+
+      let event1 = sinon.createStubInstance(EventInterface);
+      event1.toMessage = sinon.stub()
+        .returns({'event': 'user.created'});
+
+      let event2 = sinon.createStubInstance(EventInterface);
+      event2.toMessage = sinon.stub()
+        .returns({'event': 'order.created'});
+      let events = [event1, event2];
+
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+      validator.validate = sinon.stub();
+      validator.validate.onCall(0)
+        .returns(Promise.resolve(new ValidationResult(validator, event1, true)));
+      validator.validate.onCall(1)
+        .returns(Promise.resolve(new ValidationResult(validator, event2, true)));
+
+      let manager = new EventManager(adapter, translator, validator);
+
+      return manager.dispatchBatch('my_channel', events).then((results) => {
+        sinon.assert.calledOnce(event1.toMessage);
+        sinon.assert.calledOnce(event2.toMessage);
+
+        sinon.assert.calledTwice(validator.validate);
+        sinon.assert.calledWith(validator.validate, event1);
+        sinon.assert.calledWith(validator.validate, event2);
+
+        sinon.assert.calledOnce(adapter.publishBatch);
+        sinon.assert.calledWith(
+          adapter.publishBatch,
+          'my_channel',
+          [
+            {'event': 'user.created'},
+            {'event': 'order.created'},
+          ]
+        );
+
+        expect(results).to.deep.equal(['result1', 'result2']);
+      });
+    });
+
+    it('should reject the promise with the first failed ValidationResult when a validator is set and validation fails', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+
+      let event1 = sinon.createStubInstance(EventInterface);
+      let event2 = sinon.createStubInstance(EventInterface);
+      let events = [event1, event2];
+
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult1 = new ValidationResult(validator, event1, false, ['should have required property \'user\'']);
+      let validationResult2 = new ValidationResult(validator, event2, true);
+
+      validator.validate = sinon.stub();
+      validator.validate.onCall(0)
+        .returns(Promise.resolve(validationResult1));
+      validator.validate.onCall(1)
+        .returns(Promise.resolve(validationResult2));
+
+      let manager = new EventManager(adapter, translator, validator);
+
+      return manager.dispatchBatch('my_channel', events).catch((reason) => {
+        sinon.assert.calledTwice(validator.validate);
+        sinon.assert.calledWith(validator.validate, event1);
+        sinon.assert.calledWith(validator.validate, event2);
+
+        expect(reason).to.equal(validationResult1);
+      });
+    });
+
+    it('should call the validationFailHandler when a validator is set and validation fails', () => {
+      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
+
+      let translator = sinon.createStubInstance(MessageTranslatorInterface);
+
+      let event1 = sinon.createStubInstance(EventInterface);
+      let event2 = sinon.createStubInstance(EventInterface);
+      let events = [event1, event2];
+
+      let validator = sinon.createStubInstance(EventValidatorInterface);
+
+      let validationResult1 = new ValidationResult(validator, event1, false, ['should have required property \'user\'']);
+      let validationResult2 = new ValidationResult(validator, event2, true);
+
+      validator.validate = sinon.stub();
+      validator.validate.onCall(0)
+        .returns(Promise.resolve(validationResult1));
+      validator.validate.onCall(1)
+        .returns(Promise.resolve(validationResult2));
+
+      let validationFailHandler = sinon.spy();
+
+      let manager = new EventManager(adapter, translator, validator);
+      manager.validationFailHandler = validationFailHandler;
+
+      return manager.dispatchBatch('my_channel', events).catch((reason) => {
+        sinon.assert.calledTwice(validator.validate);
+        sinon.assert.calledWith(validator.validate, event1);
+        sinon.assert.calledWith(validator.validate, event2);
+
+        sinon.assert.calledOnce(validationFailHandler);
+        sinon.assert.calledWith(validationFailHandler, validationResult1);
+
+        expect(reason).to.equal(validationResult1);
+      });
     });
   });
 });
