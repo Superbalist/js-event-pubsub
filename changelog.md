@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1 - 2017-07-19
+
+* Export ValidationResult class from module
+
 ## 3.0.0 - 2017-07-18
 
 * EventValidatorInterface->validates() renamed to ->validate()
