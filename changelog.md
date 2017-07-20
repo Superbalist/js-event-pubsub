@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.2 - 2017-07-20
+
+* Events are no longer validated when received, only upon dispatch
+
 ## 3.0.1 - 2017-07-19
 
 * Export ValidationResult class from module

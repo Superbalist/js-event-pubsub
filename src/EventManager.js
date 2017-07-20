@@ -143,22 +143,7 @@ class EventManager {
         // we were able to translate the message into an event
         if (event.matches(expr)) {
           // the event matches the listen expression
-          if (this.validator === null) {
-            // not using a validator
-            handler(event);
-          } else {
-            this.validator.validate(event).then((result) => {
-              if (result.passes) {
-                // event passed validation
-                handler(event);
-              } else {
-                // pass to validation fail handler?
-                if (this.validationFailHandler) {
-                  this.validationFailHandler(result);
-                }
-              }
-            });
-          }
+          handler(event);
         } else {
           // pass to listen expr fail handler?
           if (this.listenExprFailHandler) {

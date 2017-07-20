@@ -193,34 +193,6 @@ describe('EventManager', () => {
       sinon.assert.calledWith(event.matches, '*');
     });
 
-    it('when a message is received, the event should be validated', () => {
-      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.subscribe = sinon.stub();
-
-      let event = sinon.createStubInstance(EventInterface);
-      event.matches = sinon.stub()
-        .returns(true);
-
-      let translator = sinon.createStubInstance(MessageTranslatorInterface);
-      translator.translate = sinon.stub()
-        .returns(event);
-
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-      validator.validate = sinon.stub()
-        .returns(new Promise((resolve, reject) => {}));
-
-      let manager = new EventManager(adapter, translator, validator);
-
-      let handler = sinon.spy();
-
-      manager.listen('my_channel', '*', handler);
-
-      adapter.subscribe.yield({'event': 'user.created'});
-
-      sinon.assert.calledOnce(validator.validate);
-      sinon.assert.calledWith(validator.validate, event);
-    });
-
     it('when a message is received & the translator fails, the handler should not be called', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
       adapter.subscribe = sinon.stub();
@@ -315,7 +287,7 @@ describe('EventManager', () => {
       sinon.assert.calledWith(listenExprFailHandler, event, 'order.created');
     });
 
-    it('when a message is received & no validator is set, the event should be passed to the handler', () => {
+    it('when a message is received & matches the listen expression, the event should be passed to the handler', () => {
       let adapter = sinon.createStubInstance(PubSubAdapterInterface);
       adapter.subscribe = sinon.stub();
 
@@ -337,121 +309,6 @@ describe('EventManager', () => {
 
       sinon.assert.calledOnce(handler);
       sinon.assert.calledWith(handler, event);
-    });
-
-    it('when a message is received & validation succeeds, the event should be passed to the handler', () => {
-      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.subscribe = sinon.stub();
-
-      let event = sinon.createStubInstance(EventInterface);
-      event.matches = sinon.stub()
-        .returns(true);
-
-      let translator = sinon.createStubInstance(MessageTranslatorInterface);
-      translator.translate = sinon.stub()
-        .returns(event);
-
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-
-      let validationResult = new ValidationResult(validator, event, true);
-
-      let validationPromise = new Promise((resolve, reject) => {
-        resolve(validationResult);
-      });
-
-      validator.validate = sinon.stub()
-        .returns(validationPromise);
-
-      let manager = new EventManager(adapter, translator, validator);
-
-      let handler = sinon.spy();
-
-      manager.listen('my_channel', '*', handler);
-
-      adapter.subscribe.yield({'event': 'user.created'});
-
-      return validationPromise.then(() => {
-        sinon.assert.calledOnce(handler);
-        sinon.assert.calledWith(handler, event);
-      });
-    });
-
-    it('when a message is received & validation fails, the event should not be passed to the handler', () => {
-      let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-      adapter.subscribe = sinon.stub();
-
-      let event = sinon.createStubInstance(EventInterface);
-      event.matches = sinon.stub()
-        .returns(true);
-
-      let translator = sinon.createStubInstance(MessageTranslatorInterface);
-      translator.translate = sinon.stub()
-        .returns(event);
-
-      let validator = sinon.createStubInstance(EventValidatorInterface);
-
-      let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
-
-      let validationPromise = new Promise((resolve, reject) => {
-        resolve(validationResult);
-      });
-
-      validator.validate = sinon.stub()
-        .returns(validationPromise);
-
-      let manager = new EventManager(adapter, translator, validator);
-
-      let handler = sinon.spy();
-
-      manager.listen('my_channel', '*', handler);
-
-      adapter.subscribe.yield({'event': 'user.created'});
-
-      return validationPromise.then(() => {
-        sinon.assert.notCalled(handler);
-      });
-    });
-  });
-
-  it('when a message is received & validation fails, if a validationFailHandler is set, the callback should be triggered', () => {
-    let adapter = sinon.createStubInstance(PubSubAdapterInterface);
-    adapter.subscribe = sinon.stub();
-
-    let event = sinon.createStubInstance(EventInterface);
-    event.matches = sinon.stub()
-      .returns(true);
-
-    let translator = sinon.createStubInstance(MessageTranslatorInterface);
-    translator.translate = sinon.stub()
-      .returns(event);
-
-    let validator = sinon.createStubInstance(EventValidatorInterface);
-
-    let validationResult = new ValidationResult(validator, event, false, ['should have required property \'user\'']);
-
-    let validationPromise = new Promise((resolve, reject) => {
-      resolve(validationResult);
-    });
-
-    validator.validate = sinon.stub()
-      .returns(validationPromise);
-
-    let validationFailHandler = sinon.spy();
-
-    let manager = new EventManager(adapter, translator, validator);
-    manager.validationFailHandler = validationFailHandler;
-
-    let handler = sinon.spy();
-
-    manager.listen('my_channel', '*', handler);
-
-    adapter.subscribe.yield({'event': 'user.created'});
-
-    return validationPromise.then(() => {
-      sinon.assert.notCalled(handler);
-
-      sinon.assert.calledOnce(validationFailHandler);
-      sinon.assert.calledWith(validationFailHandler, validationResult);
     });
   });
 
